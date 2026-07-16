@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@TableName("comment")
+@TableName("`comment`")
 public class Comment {
 
     @TableId(type = IdType.AUTO)
