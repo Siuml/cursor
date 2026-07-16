@@ -1,14 +1,14 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
     name: book-trade
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/book_trade?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-    username: 2192767721@qq.com
-    password: '@303303LUo'
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   thymeleaf:
     cache: false
     prefix: classpath:/templates/
@@ -33,4 +33,4 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 book-trade:
-  upload-path: uploads/
+  upload-path: ${UPLOAD_PATH:/app/uploads}

@@ -1,0 +1,9 @@
+target/
+__MACOSX/
+.git/
+.gitignore
+.vscode/
+*.md
+netlify.toml
+sql/
+uploads/

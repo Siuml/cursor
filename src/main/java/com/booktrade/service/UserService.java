@@ -3,21 +3,24 @@ package com.booktrade.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.booktrade.entity.User;
 import com.booktrade.mapper.UserMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserMapper userMapper) {
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User login(String username, String password) {
         User user = userMapper.selectOne(
                 new LambdaQueryWrapper<User>().eq(User::getUsername, username));
-        if (user != null && user.getPassword().equals(password)) {
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
             return user;
         }
         return null;
@@ -29,6 +32,7 @@ public class UserService {
         if (count > 0) {
             return false;
         }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(0);
         return userMapper.insert(user) > 0;
     }
