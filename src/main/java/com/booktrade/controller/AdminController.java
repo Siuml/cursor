@@ -1,4 +1,4 @@
-package com.booktrade.controller;
+﻿package com.booktrade.controller;
 
 import com.booktrade.config.LoginInterceptor;
 import com.booktrade.entity.Book;
@@ -6,6 +6,7 @@ import com.booktrade.entity.OrderLog;
 import com.booktrade.entity.TradeOrder;
 import com.booktrade.entity.User;
 import com.booktrade.service.BookService;
+import com.booktrade.service.NotificationService;
 import com.booktrade.service.OrderService;
 import com.booktrade.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -24,13 +25,15 @@ import java.util.List;
 public class AdminController {
 
     private final BookService bookService;
+    private final NotificationService notificationService;
     private final OrderService orderService;
     private final UserService userService;
 
-    public AdminController(BookService bookService, OrderService orderService, UserService userService) {
+    public AdminController(BookService bookService, OrderService orderService, UserService userService, NotificationService notificationService) {
         this.bookService = bookService;
         this.orderService = orderService;
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping
@@ -123,9 +126,9 @@ public class AdminController {
         TradeOrder order = orderService.getById(id);
         if (order != null && order.getStatus() == 0) {
             orderService.updateStatus(id, 1, user.getId(), user.getNickname());
-            redirectAttributes.addFlashAttribute("success", "订单已确认");
+            redirectAttributes.addFlashAttribute("success", "msg.order.confirmed");
         } else {
-            redirectAttributes.addFlashAttribute("error", "订单状态不正确");
+            redirectAttributes.addFlashAttribute("error", "msg.order.status_error");
         }
         return "redirect:/admin/order/detail/" + id;
     }
@@ -142,9 +145,9 @@ public class AdminController {
         if (order != null && order.getStatus() == 1) {
             orderService.updateStatus(id, 2, user.getId(), user.getNickname());
             bookService.markSold(order.getBookId());
-            redirectAttributes.addFlashAttribute("success", "订单已完成");
+            redirectAttributes.addFlashAttribute("success", "msg.order.completed");
         } else {
-            redirectAttributes.addFlashAttribute("error", "订单状态不正确");
+            redirectAttributes.addFlashAttribute("error", "msg.order.status_error");
         }
         return "redirect:/admin/order/detail/" + id;
     }
@@ -160,9 +163,9 @@ public class AdminController {
         TradeOrder order = orderService.getById(id);
         if (order != null && order.getStatus() == 0) {
             orderService.updateStatus(id, 3, user.getId(), user.getNickname());
-            redirectAttributes.addFlashAttribute("success", "订单已取消");
+            redirectAttributes.addFlashAttribute("success", "msg.order.cancelled");
         } else {
-            redirectAttributes.addFlashAttribute("error", "订单状态不正确");
+            redirectAttributes.addFlashAttribute("error", "msg.order.status_error");
         }
         return "redirect:/admin/order/detail/" + id;
     }
@@ -176,7 +179,20 @@ public class AdminController {
             return "redirect:/";
         }
         bookService.delete(id);
-        redirectAttributes.addFlashAttribute("success", "书籍已删除");
+        redirectAttributes.addFlashAttribute("success", "msg.book.deleted");
+        return "redirect:/admin";
+    }
+    @PostMapping("/broadcast")
+    public String broadcast(@RequestParam String title,
+                            @RequestParam String content,
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute(LoginInterceptor.SESSION_USER);
+        if (user == null || user.getRole() != 1) {
+            return "redirect:/";
+        }
+        notificationService.broadcastToAll(title, content, "system");
+        redirectAttributes.addFlashAttribute("success", "msg.broadcast.sent");
         return "redirect:/admin";
     }
 }

@@ -1,4 +1,4 @@
-package com.booktrade.service;
+﻿package com.booktrade.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.booktrade.entity.Book;
@@ -10,9 +10,11 @@ import com.booktrade.mapper.CommentMapper;
 import com.booktrade.mapper.NotificationMapper;
 import com.booktrade.mapper.UserMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CommentService {
@@ -63,19 +65,20 @@ public class CommentService {
         return replies;
     }
 
+    @Transactional
     public boolean create(Comment comment) {
         comment.setCreateTime(LocalDateTime.now());
         boolean result = commentMapper.insert(comment) > 0;
         if (result) {
             Book book = bookMapper.selectById(comment.getBookId());
-            if (book != null && !book.getSellerId().equals(comment.getUserId())) {
+            if (book != null && !Objects.equals(book.getSellerId(), comment.getUserId())) {
                 User commenter = userMapper.selectById(comment.getUserId());
-                String nickname = commenter != null ? commenter.getNickname() : "匿名用户";
+                String nickname = commenter != null ? commenter.getNickname() : "Anonymous";
                 Notification notif = new Notification();
                 notif.setUserId(book.getSellerId());
                 notif.setType("comment");
-                notif.setTitle("新留言");
-                notif.setContent(nickname + " 在您的书籍《" + book.getTitle() + "》下发表了留言：" +
+                notif.setTitle("msg.notification.new_comment");
+                notif.setContent(nickname + " commented on your book \"" + book.getTitle() + "\": " +
                         (comment.getContent().length() > 50 ? comment.getContent().substring(0, 50) + "..." : comment.getContent()));
                 notif.setRelatedId(book.getId());
                 notif.setIsRead(0);

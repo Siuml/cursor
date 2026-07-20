@@ -1,4 +1,4 @@
-package com.booktrade.controller;
+﻿package com.booktrade.controller;
 
 import com.booktrade.config.LoginInterceptor;
 import com.booktrade.entity.Notification;
@@ -44,21 +44,7 @@ public class NotificationController {
                               RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute(LoginInterceptor.SESSION_USER);
         notificationService.markAllAsRead(user.getId());
-        redirectAttributes.addFlashAttribute("success", "已全部标记为已读");
+        redirectAttributes.addFlashAttribute("success", "msg.notification.all_read");
         return "redirect:/notifications";
-    }
-
-    @PostMapping("/admin/broadcast")
-    public String broadcast(@RequestParam String title,
-                            @RequestParam String content,
-                            HttpSession session,
-                            RedirectAttributes redirectAttributes) {
-        User user = (User) session.getAttribute(LoginInterceptor.SESSION_USER);
-        if (user.getRole() != 1) {
-            return "redirect:/";
-        }
-        notificationService.broadcastToAll(title, content, "system");
-        redirectAttributes.addFlashAttribute("success", "公告已发送给所有用户");
-        return "redirect:/admin";
     }
 }
