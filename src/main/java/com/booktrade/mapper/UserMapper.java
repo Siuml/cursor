@@ -1,4 +1,4 @@
-﻿package com.booktrade.mapper;
+package com.booktrade.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.booktrade.entity.User;

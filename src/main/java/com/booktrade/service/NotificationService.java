@@ -1,4 +1,4 @@
-﻿package com.booktrade.service;
+package com.booktrade.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.booktrade.entity.Notification;
