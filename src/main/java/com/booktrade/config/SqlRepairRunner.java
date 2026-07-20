@@ -13,11 +13,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-/**
- * Runs AFTER DataSource is initialized.
- * Safely repairs Railway MySQL: adds missing columns, creates missing tables.
- * All operations are idempotent 鈥?safe to run on every startup.
- */
 @Component
 public class SqlRepairRunner implements CommandLineRunner {
 
@@ -30,53 +25,63 @@ public class SqlRepairRunner implements CommandLineRunner {
     public void run(String... args) {
         try (Connection conn = dataSource.getConnection()) {
             String driverName = conn.getMetaData().getDriverName();
-            log.info("SqlRepairRunner: connected to 鈫?{}", driverName);
+            log.info("SqlRepairRunner: connected to {}", driverName);
 
-            // Only repair on MySQL (skip H2)
             if (driverName == null || !driverName.contains("MySQL")) {
                 log.info("SqlRepairRunner: skipping (not MySQL: {})", driverName);
                 return;
             }
 
-            // 1. Ensure all tables exist
+            // 1. Create all missing tables
             log.info("SqlRepairRunner: creating tables if missing...");
             runScript(conn, "sql/railway-repair-create.sql");
 
-            // 2. Add missing columns (deleted on user/book)
+            // 2. Add missing columns
             addColumnIfMissing(conn, "user", "deleted");
             addColumnIfMissing(conn, "book", "deleted");
 
-            log.info("鉁?SqlRepairRunner: Railway MySQL repair complete!");
+            log.info("SqlRepairRunner: Railway MySQL repair complete!");
 
         } catch (Exception e) {
-            log.warn("SqlRepairRunner: repair skipped (DB not ready yet?) 鈫?{}", e.getMessage());
+            log.error("SqlRepairRunner: repair failed: {}", e.getMessage(), e);
         }
     }
 
     private void addColumnIfMissing(Connection conn, String table, String column) {
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(
-                 "SELECT COUNT(*) FROM information_schema.COLUMNS " +
-                 "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '" + table + "' AND COLUMN_NAME = '" + column + "'")) {
+        try (Statement checkStmt = conn.createStatement()) {
+            ResultSet rs = checkStmt.executeQuery(
+                "SELECT COUNT(*) FROM information_schema.COLUMNS " +
+                "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '" + table +
+                "' AND COLUMN_NAME = '" + column + "'");
             rs.next();
-            if (rs.getInt(1) == 0) {
-                stmt.execute("ALTER TABLE `" + table + "` ADD COLUMN `" + column + "` TINYINT NOT NULL DEFAULT 0");
-                log.info("SqlRepairRunner: added `{}`.`{}` column", table, column);
+            int count = rs.getInt(1);
+            rs.close();
+            checkStmt.close();
+
+            if (count == 0) {
+                try (Statement alterStmt = conn.createStatement()) {
+                    alterStmt.execute("ALTER TABLE `" + table + "` ADD COLUMN `" +
+                        column + "` TINYINT NOT NULL DEFAULT 0");
+                    log.info("SqlRepairRunner: added `{}`.`{}` column", table, column);
+                }
             } else {
                 log.info("SqlRepairRunner: `{}`.`{}` already exists, skipping", table, column);
             }
         } catch (Exception e) {
-            log.warn("SqlRepairRunner: failed to check/add {}.{} 鈫?{}", table, column, e.getMessage());
+            log.warn("SqlRepairRunner: failed to check/add {}.{}: {}", table, column, e.getMessage());
         }
     }
 
     private void runScript(Connection conn, String scriptPath) {
         try {
-            ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource(scriptPath));
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+                new ClassPathResource(scriptPath));
             populator.setContinueOnError(true);
+            populator.setIgnoreFailedDrops(true);
             populator.populate(conn);
+            log.info("SqlRepairRunner: script {} executed", scriptPath);
         } catch (Exception e) {
-            log.warn("SqlRepairRunner: script {} failed 鈫?{}", scriptPath, e.getMessage());
+            log.warn("SqlRepairRunner: script {} failed: {}", scriptPath, e.getMessage());
         }
     }
 }
