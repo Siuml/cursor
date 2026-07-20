@@ -1,102 +1,72 @@
+-- Railway MySQL schema (auto-loaded by spring.sql.init via SCHEMA_FILE env var)
+-- Uses CREATE TABLE IF NOT EXISTS for idempotent runs
+
 CREATE TABLE IF NOT EXISTS `user` (
-    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT 'PK',
-    `username`    VARCHAR(50)  NOT NULL COMMENT 'username',
-    `password`    VARCHAR(100) NOT NULL COMMENT 'password(BCrypt)',
-    `nickname`    VARCHAR(50)  DEFAULT NULL COMMENT 'nickname',
-    `phone`       VARCHAR(20)  DEFAULT NULL COMMENT 'phone',
-    `role`        TINYINT      NOT NULL DEFAULT 0 COMMENT 'role:0-student 1-admin',
-    `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-    `deleted`     TINYINT      NOT NULL DEFAULT 0 COMMENT 'logic delete:0-no 1-yes',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='user';
+    `id` BIGINT NOT NULL AUTO_INCREMENT, `username` VARCHAR(50) NOT NULL,
+    `password` VARCHAR(100) NOT NULL, `nickname` VARCHAR(50) DEFAULT NULL,
+    `phone` VARCHAR(20) DEFAULT NULL, `role` TINYINT NOT NULL DEFAULT 0,
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deleted` TINYINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`), UNIQUE KEY `uk_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `category` (
-    `id`   BIGINT      NOT NULL AUTO_INCREMENT COMMENT 'PK',
-    `name` VARCHAR(50) NOT NULL COMMENT 'category name',
+    `id` BIGINT NOT NULL AUTO_INCREMENT, `name` VARCHAR(50) NOT NULL,
     PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='category';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `book` (
-    `id`          BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'PK',
-    `title`       VARCHAR(100)  NOT NULL COMMENT 'title',
-    `author`      VARCHAR(50)   DEFAULT NULL COMMENT 'author',
-    `isbn`        VARCHAR(20)   DEFAULT NULL COMMENT 'ISBN',
-    `price`       DECIMAL(10,2) NOT NULL COMMENT 'price',
-    `description` TEXT          DEFAULT NULL COMMENT 'description',
-    `cover_image` VARCHAR(255)  DEFAULT NULL COMMENT 'cover image path',
-    `category_id` BIGINT        DEFAULT NULL COMMENT 'category id',
-    `seller_id`   BIGINT        NOT NULL COMMENT 'seller id',
-    `status`      TINYINT       NOT NULL DEFAULT 1 COMMENT 'status:0-off 1-on 2-sold',
-    `condition`   TINYINT       NOT NULL DEFAULT 0 COMMENT 'condition:0-new 1-good 2-fair',
-    `create_time` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-    `update_time` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'update time',
-    `deleted`     TINYINT       NOT NULL DEFAULT 0 COMMENT 'logic delete',
-    PRIMARY KEY (`id`),
-    KEY `idx_seller_id` (`seller_id`),
-    KEY `idx_category_id` (`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='book';
+    `id` BIGINT NOT NULL AUTO_INCREMENT, `title` VARCHAR(100) NOT NULL,
+    `author` VARCHAR(50) DEFAULT NULL, `isbn` VARCHAR(20) DEFAULT NULL,
+    `price` DECIMAL(10,2) NOT NULL, `description` TEXT DEFAULT NULL,
+    `cover_image` VARCHAR(255) DEFAULT NULL, `category_id` BIGINT DEFAULT NULL,
+    `seller_id` BIGINT NOT NULL, `status` TINYINT NOT NULL DEFAULT 1,
+    `condition` TINYINT NOT NULL DEFAULT 0,
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted` TINYINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`), KEY `idx_seller_id` (`seller_id`), KEY `idx_category_id` (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `trade_order` (
-    `id`          BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'PK',
-    `order_no`    VARCHAR(32)   NOT NULL COMMENT 'order number',
-    `book_id`     BIGINT        NOT NULL COMMENT 'book id',
-    `buyer_id`    BIGINT        NOT NULL COMMENT 'buyer id',
-    `seller_id`   BIGINT        NOT NULL COMMENT 'seller id',
-    `price`       DECIMAL(10,2) NOT NULL COMMENT 'price',
-    `status`      TINYINT       NOT NULL DEFAULT 0 COMMENT 'status:0-pending 1-confirmed 2-completed 3-cancelled 4-paid',
-    `create_time` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-    `update_time` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'update time',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_order_no` (`order_no`),
-    KEY `idx_buyer_id` (`buyer_id`),
-    KEY `idx_seller_id` (`seller_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='order';
+    `id` BIGINT NOT NULL AUTO_INCREMENT, `order_no` VARCHAR(32) NOT NULL,
+    `book_id` BIGINT NOT NULL, `buyer_id` BIGINT NOT NULL, `seller_id` BIGINT NOT NULL,
+    `price` DECIMAL(10,2) NOT NULL, `status` TINYINT NOT NULL DEFAULT 0,
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`), UNIQUE KEY `uk_order_no` (`order_no`),
+    KEY `idx_buyer_id` (`buyer_id`), KEY `idx_seller_id` (`seller_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `comment` (
-    `id`          BIGINT   NOT NULL AUTO_INCREMENT COMMENT 'PK',
-    `book_id`     BIGINT   NOT NULL COMMENT 'book id',
-    `user_id`     BIGINT   NOT NULL COMMENT 'user id',
-    `parent_id`   BIGINT   DEFAULT NULL COMMENT 'parent comment id',
-    `content`     TEXT     NOT NULL COMMENT 'content',
-    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-    PRIMARY KEY (`id`),
-    KEY `idx_book_id` (`book_id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_parent_id` (`parent_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='comment';
+    `id` BIGINT NOT NULL AUTO_INCREMENT, `book_id` BIGINT NOT NULL,
+    `user_id` BIGINT NOT NULL, `parent_id` BIGINT DEFAULT NULL,
+    `content` TEXT NOT NULL,
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`), KEY `idx_book_id` (`book_id`),
+    KEY `idx_user_id` (`user_id`), KEY `idx_parent_id` (`parent_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `order_log` (
-    `id`            BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'PK',
-    `order_id`      BIGINT        NOT NULL COMMENT 'order id',
-    `operator_id`   BIGINT        DEFAULT NULL COMMENT 'operator id',
-    `operator_name` VARCHAR(50)   DEFAULT NULL COMMENT 'operator name',
-    `action`        VARCHAR(100)  NOT NULL COMMENT 'action',
-    `create_time`   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-    PRIMARY KEY (`id`),
-    KEY `idx_order_id` (`order_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='order log';
+    `id` BIGINT NOT NULL AUTO_INCREMENT, `order_id` BIGINT NOT NULL,
+    `operator_id` BIGINT DEFAULT NULL, `operator_name` VARCHAR(50) DEFAULT NULL,
+    `action` VARCHAR(100) NOT NULL,
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`), KEY `idx_order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `payment` (
-    `id`         BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'PK',
-    `order_id`   BIGINT        NOT NULL COMMENT 'order id',
-    `amount`     DECIMAL(10,2) NOT NULL COMMENT 'amount',
-    `pay_method` VARCHAR(20)   NOT NULL COMMENT 'payment method',
-    `pay_time`   DATETIME      NOT NULL COMMENT 'payment time',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_order_id` (`order_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='payment';
+    `id` BIGINT NOT NULL AUTO_INCREMENT, `order_id` BIGINT NOT NULL,
+    `amount` DECIMAL(10,2) NOT NULL, `pay_method` VARCHAR(20) NOT NULL,
+    `pay_time` DATETIME NOT NULL,
+    PRIMARY KEY (`id`), UNIQUE KEY `uk_order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `notification` (
-    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT 'PK',
-    `user_id`     BIGINT       NOT NULL COMMENT 'receiver user id',
-    `type`        VARCHAR(20)  NOT NULL COMMENT 'type:order/comment/system',
-    `title`       VARCHAR(200) NOT NULL COMMENT 'title',
-    `content`     TEXT         DEFAULT NULL COMMENT 'content',
-    `related_id`  BIGINT       DEFAULT NULL COMMENT 'related id',
-    `is_read`     TINYINT      NOT NULL DEFAULT 0 COMMENT '0-unread 1-read',
-    `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-    PRIMARY KEY (`id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_user_read` (`user_id`, `is_read`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='notification';
+    `id` BIGINT NOT NULL AUTO_INCREMENT, `user_id` BIGINT NOT NULL,
+    `type` VARCHAR(20) NOT NULL, `title` VARCHAR(200) NOT NULL,
+    `content` TEXT DEFAULT NULL, `related_id` BIGINT DEFAULT NULL,
+    `is_read` TINYINT NOT NULL DEFAULT 0,
+    `create_time` DATETIME NOT NULL,
+    PRIMARY KEY (`id`), KEY `idx_user_id` (`user_id`), KEY `idx_user_read` (`user_id`, `is_read`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
