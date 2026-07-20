@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -26,23 +28,31 @@ public class SqlRepairRunner implements CommandLineRunner {
             log.info("SqlRepairRunner: driver = {}", driverName);
 
             if (driverName == null || !driverName.toLowerCase().contains("mysql")) {
-                log.info("SqlRepairRunner: not MySQL, skipping SQL repair");
+                log.info("SqlRepairRunner: not MySQL, skipping");
                 return;
             }
 
-            String[][] fixes = {
-                {"user",    "deleted", "TINYINT NOT NULL DEFAULT 0"},
-                {"book",    "deleted", "TINYINT NOT NULL DEFAULT 0"},
-            };
-
-            for (String[] fix : fixes) {
-                tryAddColumn(conn, fix[0], fix[1], fix[2]);
+            // Step 1: Create all missing tables (idempotent CREATE TABLE IF NOT EXISTS)
+            log.info("SqlRepairRunner: creating tables if missing...");
+            try {
+                ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+                    new ClassPathResource("sql/railway-repair-create.sql"));
+                populator.setContinueOnError(true);
+                populator.setIgnoreFailedDrops(true);
+                populator.populate(conn);
+                log.info("SqlRepairRunner: table creation script executed");
+            } catch (Exception e) {
+                log.warn("SqlRepairRunner: table creation had errors (may be ok): {}", e.getMessage());
             }
+
+            // Step 2: Add missing `deleted` columns
+            tryAddColumn(conn, "user", "deleted", "TINYINT NOT NULL DEFAULT 0");
+            tryAddColumn(conn, "book", "deleted", "TINYINT NOT NULL DEFAULT 0");
 
             log.info("SqlRepairRunner: all repairs complete!");
 
         } catch (Exception e) {
-            log.error("SqlRepairRunner: connection/setup failed: {}", e.getMessage());
+            log.error("SqlRepairRunner: fatal error: {}", e.getMessage());
         }
     }
 
@@ -56,7 +66,7 @@ public class SqlRepairRunner implements CommandLineRunner {
             if (msg != null && msg.toLowerCase().contains("duplicate column")) {
                 log.info("SqlRepairRunner: `{}`.`{}` already exists, ok", table, column);
             } else {
-                log.warn("SqlRepairRunner: failed `{}`.`{}` - {}", table, column,
+                log.warn("SqlRepairRunner: `{}`.`{}` - {}", table, column,
                     msg != null ? msg.substring(0, Math.min(100, msg.length())) : "unknown");
             }
         }
