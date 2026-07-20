@@ -1,4 +1,4 @@
-package com.booktrade.controller;
+﻿package com.booktrade.controller;
 
 import com.booktrade.config.LoginInterceptor;
 import com.booktrade.entity.Book;
@@ -191,8 +191,12 @@ public class AdminController {
         if (user == null || user.getRole() != 1) {
             return "redirect:/";
         }
-        notificationService.broadcastToAll(title, content, "system");
-        redirectAttributes.addFlashAttribute("success", "msg.broadcast.sent");
+        boolean sent = notificationService.broadcastToAll(title, content, "system");
+        if (sent) {
+            redirectAttributes.addFlashAttribute("success", "msg.broadcast.sent");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "msg.broadcast.failed");
+        }
         return "redirect:/admin";
     }
 }

@@ -1,9 +1,11 @@
-package com.booktrade.service;
+﻿package com.booktrade.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.booktrade.entity.Notification;
 import com.booktrade.mapper.NotificationMapper;
 import com.booktrade.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -11,6 +13,8 @@ import java.util.List;
 
 @Service
 public class NotificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
     private final NotificationMapper notificationMapper;
     private final UserMapper userMapper;
@@ -62,19 +66,27 @@ public class NotificationService {
     }
 
     public boolean broadcastToAll(String title, String content, String type) {
-        List<Long> userIds = userMapper.selectList(null).stream()
-                .map(u -> u.getId())
-                .toList();
-        for (Long uid : userIds) {
-            Notification n = new Notification();
-            n.setUserId(uid);
-            n.setType(type);
-            n.setTitle(title);
-            n.setContent(content);
-            n.setIsRead(0);
-            n.setCreateTime(LocalDateTime.now());
-            notificationMapper.insert(n);
+        try {
+            List<Long> userIds = userMapper.findAllIds();
+            if (userIds.isEmpty()) {
+                log.warn("broadcastToAll: no users found, broadcast skipped");
+                return false;
+            }
+            for (Long uid : userIds) {
+                Notification n = new Notification();
+                n.setUserId(uid);
+                n.setType(type);
+                n.setTitle(title);
+                n.setContent(content);
+                n.setIsRead(0);
+                n.setCreateTime(LocalDateTime.now());
+                notificationMapper.insert(n);
+            }
+            log.info("broadcastToAll: sent to {} users", userIds.size());
+            return true;
+        } catch (Exception e) {
+            log.error("broadcastToAll failed: {}", e.getMessage(), e);
+            return false;
         }
-        return true;
     }
 }
