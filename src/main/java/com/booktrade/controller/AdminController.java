@@ -1,4 +1,4 @@
-﻿package com.booktrade.controller;
+package com.booktrade.controller;
 
 import com.booktrade.config.LoginInterceptor;
 import com.booktrade.entity.Book;
