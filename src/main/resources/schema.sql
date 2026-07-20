@@ -1,5 +1,5 @@
--- Railway MySQL schema (auto-loaded by spring.sql.init via SCHEMA_FILE env var)
--- Uses CREATE TABLE IF NOT EXISTS for idempotent runs
+-- Railway MySQL schema (idempotent - safe for spring.sql.init)
+-- All ALTER TABLE statements check if column exists first
 
 CREATE TABLE IF NOT EXISTS `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT, `username` VARCHAR(50) NOT NULL,
@@ -70,3 +70,7 @@ CREATE TABLE IF NOT EXISTS `notification` (
     `create_time` DATETIME NOT NULL,
     PRIMARY KEY (`id`), KEY `idx_user_id` (`user_id`), KEY `idx_user_read` (`user_id`, `is_read`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Conditionally add missing `deleted` columns (idempotent - never fails)
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='user' AND COLUMN_NAME='deleted')=0, 'ALTER TABLE `user` ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0', 'SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='book' AND COLUMN_NAME='deleted')=0, 'ALTER TABLE `book` ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0', 'SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
