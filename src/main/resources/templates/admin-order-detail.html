@@ -1,156 +1,102 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language == 'en' ? 'en' : (#locale.language == 'ko' ? 'ko' : 'zh-CN')}">
 <head th:replace="~{fragments/layout :: head(#{admin.order.detail})}"></head>
 <body>
 <div th:replace="~{fragments/layout :: navbar}"></div>
 
 <div class="container">
     <div th:replace="~{fragments/layout :: alert}"></div>
-    <div th:replace="~{fragments/layout :: alert-error}"></div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 th:text="#{admin.order.detail}">订单详情</h4>
-        <a th:href="@{/admin/orders}" class="btn btn-sm btn-outline-primary" th:text="#{admin.back}">返回订单列表</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 th:text="#{admin.order.detail}">Order Detail</h4>
+        <a th:href="@{/admin/orders}" class="btn btn-sm btn-secondary" th:text="#{admin.back}">Back</a>
     </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white" th:text="#{myorders.orderinfo}">订单信息</div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong th:text="#{myorders.orderid}">订单号：</strong>
-                            <span th:text="${order.orderNo}">ORD000000</span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong th:text="#{myorders.status}">订单状态：</strong>
-                            <span th:if="${order.status == 0}" class="badge bg-warning text-dark" th:text="#{myorders.status.pending}">待确认</span>
-                            <span th:if="${order.status == 1}" class="badge bg-info" th:text="#{myorders.status.confirmed}">已确认</span>
-                            <span th:if="${order.status == 4}" class="badge bg-primary" th:text="#{myorders.status.paid}">已付款</span>
-                            <span th:if="${order.status == 2}" class="badge bg-success" th:text="#{myorders.status.completed}">已完成</span>
-                            <span th:if="${order.status == 3}" class="badge bg-secondary" th:text="#{myorders.status.cancelled}">已取消</span>
+    <div th:if="${order != null}">
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{trade.detail.orderinfo}">Order Info</div>
+            <div class="card-body">
+                <p><span th:text="#{myorders.orderid}">Order No.</span><span th:text="#{common.colon}">: </span><span th:text="${order.orderNo}">No.</span></p>
+                <p><span th:text="#{myorders.status}">Status</span><span th:text="#{common.colon}">: </span>
+                    <span th:if="${order.status == 0}" class="badge bg-warning text-dark" th:text="#{myorders.status.pending}">Pending</span>
+                    <span th:if="${order.status == 1}" class="badge bg-info" th:text="#{myorders.status.confirmed}">Confirmed</span>
+                    <span th:if="${order.status == 4}" class="badge bg-primary" th:text="#{myorders.status.paid}">Paid</span>
+                    <span th:if="${order.status == 2}" class="badge bg-success" th:text="#{myorders.status.completed}">Completed</span>
+                    <span th:if="${order.status == 3}" class="badge bg-secondary" th:text="#{myorders.status.cancelled}">Cancelled</span>
+                </p>
+                <p><span th:text="#{myorders.time}">Order Time</span><span th:text="#{common.colon}">: </span><span th:text="${#temporals.format(order.createTime, 'yyyy-MM-dd HH:mm')}">Time</span></p>
+                <p><span th:text="#{admin.order.amount}">Amount</span><span th:text="#{common.colon}">: </span><span th:text="#{common.currency} + ' ' + ${order.price}">$ 0.00</span></p>
+            </div>
+        </div>
+
+        <div class="card mb-4" th:if="${book != null}">
+            <div class="card-header" th:text="#{trade.detail.bookinfo}">Book Info</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <img th:if="${book.coverImage}" th:src="${book.coverImage}" class="img-fluid rounded" th:alt="#{common.image.alt}">
+                        <div th:unless="${book.coverImage}" class="bg-light d-flex align-items-center justify-content-center rounded" style="height:150px;">
+                            <span class="text-muted" th:text="#{common.image.alt}">No Image</span>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong th:text="#{myorders.time}">下单时间：</strong>
-                            <span th:text="${#temporals.format(order.createTime, 'yyyy-MM-dd HH:mm:ss')}">时间</span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong th:text="#{myorders.amount}">交易金额：</strong>
-                            <span class="text-primary fw-bold">₩<span th:text="${order.price}">0.00</span></span>
-                        </div>
+                    <div class="col-md-9">
+                        <h5 th:text="${book.title}">Title</h5>
+                        <p><span th:text="#{book.author}">Author</span><span th:text="#{common.colon}">: </span><span th:text="${book.author}">Author</span></p>
+                        <p><span th:text="#{book.description}">Description</span><span th:text="#{common.colon}">: </span><span th:text="${book.description}">Desc</span></p>
+                        <p><span th:text="#{book.category}">Category</span><span th:text="#{common.colon}">: </span><span th:text="${#messages.msgOrNull('category.' + book.categoryId)} ?: 'N/A'">Category</span></p>
                     </div>
                 </div>
             </div>
+            <div th:if="${book == null}" class="card-body text-muted" th:text="#{trade.detail.bookinfo} + ' not found'">Book info not found</div>
+        </div>
 
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white" th:text="#{book.title}">商品详情</div>
-                <div class="card-body">
-                    <div th:if="${book != null}">
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <img th:if="${book.coverImage != null}" th:src="@{/uploads/{image}(image=${book.coverImage})}" 
-                                     class="img-fluid rounded" alt="书籍封面">
-                                <div th:else class="bg-light rounded p-4 text-center text-muted">无封面图片</div>
-                            </div>
-                            <div class="col-md-8">
-                                <h5 th:text="${book.title}">书名</h5>
-                                <p class="text-muted" th:text="${book.author}">作者</p>
-                                <p class="text-muted" th:text="${book.description}">描述</p>
-                                <div class="mt-2">
-                                    <span class="badge bg-secondary" th:text="#{book.category}">分类</span>
-                                    <span th:text="${#messages.msg('category.' + book.categoryId)}">分类名称</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div th:else class="text-muted text-center py-4" th:text="#{book.detail.unknown}">商品信息不存在</div>
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{admin.order.logs}">Operation Logs</div>
+            <div class="card-body">
+                <div th:if="${logs != null and !logs.isEmpty()}">
+                    <table class="table table-sm">
+                        <thead><tr>
+                            <th th:text="#{admin.operator}">Operator</th>
+                            <th th:text="#{admin.action}">Action</th>
+                            <th th:text="#{admin.time}">Time</th>
+                        </tr></thead>
+                        <tbody><tr th:each="log : ${logs}">
+                            <td th:text="${log.operatorName} ?: #{admin.system}">System</td>
+                            <td th:text="${log.action}">Action</td>
+                            <td th:text="${#temporals.format(log.createTime, 'yyyy-MM-dd HH:mm')}">Time</td>
+                        </tr></tbody>
+                    </table>
                 </div>
+                <div th:if="${logs == null or logs.isEmpty()}" class="text-muted" th:text="#{admin.nologs}">No logs</div>
             </div>
+        </div>
 
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white" th:text="#{admin.order.logs}">操作日志</div>
-                <div class="card-body">
-                    <div th:if="${logs != null and !logs.isEmpty()}">
-                        <div class="list-group">
-                            <div th:each="log : ${logs}" class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <strong th:text="${log.action}">操作内容</strong>
-                                        <p class="text-muted small mt-1" th:if="${log.operatorName != null}">
-                                            <span th:text="#{admin.operator}">操作人：</span>
-                                            <span th:text="${log.operatorName}">管理员</span>
-                                        </p>
-                                        <p class="text-muted small mt-1" th:if="${log.operatorName == null}">
-                                            <span th:text="#{admin.system}">系统操作</span>
-                                        </p>
-                                    </div>
-                                    <span class="text-muted small" th:text="${#temporals.format(log.createTime, 'yyyy-MM-dd HH:mm:ss')}">时间</span>
-                                </div>
-                            </div>
-                        </div>
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{trade.detail.userinfo}">Buyer & Seller</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6" th:if="${buyer != null}">
+                        <h6 th:text="#{myorders.buyer}">Buyer</h6>
+                        <p><span th:text="#{profile.username}">Username</span><span th:text="#{common.colon}">: </span><span th:text="${buyer.username}">user</span></p>
+                        <p><span th:text="#{profile.nickname}">Nickname</span><span th:text="#{common.colon}">: </span><span th:text="${buyer.nickname}">Nickname</span></p>
+                        <p><span th:text="#{profile.phone}">Phone</span><span th:text="#{common.colon}">: </span><span th:text="${buyer.phone}">Phone</span></p>
                     </div>
-                    <div th:else class="text-muted text-center py-4" th:text="#{admin.nologs}">暂无操作记录</div>
+                    <div class="col-md-6" th:if="${buyer == null}" th:text="#{admin.usernotfound}">User not found</div>
+                    <div class="col-md-6" th:if="${seller != null}">
+                        <h6 th:text="#{myorders.seller}">Seller</h6>
+                        <p><span th:text="#{profile.username}">Username</span><span th:text="#{common.colon}">: </span><span th:text="${seller.username}">user</span></p>
+                        <p><span th:text="#{profile.nickname}">Nickname</span><span th:text="#{common.colon}">: </span><span th:text="${seller.nickname}">Nickname</span></p>
+                        <p><span th:text="#{profile.phone}">Phone</span><span th:text="#{common.colon}">: </span><span th:text="${seller.phone}">Phone</span></p>
+                    </div>
+                    <div class="col-md-6" th:if="${seller == null}" th:text="#{admin.usernotfound}">User not found</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white" th:text="#{myorders.buyer}">买家信息</div>
-                <div class="card-body">
-                    <div th:if="${buyer != null}">
-                        <p><strong>用户名：</strong><span th:text="${buyer.username}">用户名</span></p>
-                        <p><strong>昵称：</strong><span th:text="${buyer.nickname}">昵称</span></p>
-                        <p><strong>手机号：</strong><span th:text="${buyer.phone != null ? buyer.phone : '-'}">-</span></p>
-                    </div>
-                    <div th:else class="text-muted">用户信息不存在</div>
-                </div>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white" th:text="#{myorders.seller}">卖家信息</div>
-                <div class="card-body">
-                    <div th:if="${seller != null}">
-                        <p><strong>用户名：</strong><span th:text="${seller.username}">用户名</span></p>
-                        <p><strong>昵称：</strong><span th:text="${seller.nickname}">昵称</span></p>
-                        <p><strong>手机号：</strong><span th:text="${seller.phone != null ? seller.phone : '-'}">-</span></p>
-                    </div>
-                    <div th:else class="text-muted">用户信息不存在</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header bg-primary text-white" th:text="#{admin.action}">操作</div>
-                <div class="card-body">
-                    <div th:if="${order.status == 0}">
-                        <a th:href="@{/admin/order/confirm/{id}(id=${order.id})}" 
-                           class="btn btn-sm btn-primary w-100 mb-2"
-                           th:onclick="|return confirm('#{admin.order.confirmconfirm}')|"
-                           th:text="#{myorders.confirm}">确认订单</a>
-                        <a th:href="@{/admin/order/cancel/{id}(id=${order.id})}" 
-                           class="btn btn-sm btn-outline-danger w-100"
-                           th:onclick="|return confirm('#{myorders.cancelconfirm}')|"
-                           th:text="#{myorders.cancel}">取消订单</a>
-                    </div>
-                    <div th:if="${order.status == 1}">
-                        <a th:href="@{/admin/order/complete/{id}(id=${order.id})}" 
-                           class="btn btn-sm btn-success w-100"
-                           th:onclick="|return confirm('#{admin.order.completeconfirm}')|"
-                           th:text="#{myorders.complete}">确认完成</a>
-                    </div>
-                    <div th:if="${order.status == 4}">
-                        <a th:href="@{/admin/order/complete/{id}(id=${order.id})}" 
-                           class="btn btn-sm btn-success w-100"
-                           th:onclick="|return confirm('#{admin.order.completeconfirm}')|"
-                           th:text="#{myorders.complete}">确认完成</a>
-                    </div>
-                    <div th:if="${order.status == 2}" class="text-center text-success" th:text="#{myorders.status.completed}">订单已完成</div>
-                    <div th:if="${order.status == 3}" class="text-center text-secondary" th:text="#{myorders.status.cancelled}">订单已取消</div>
-                </div>
-            </div>
+        <div class="mb-4">
+            <a th:if="${order.status == 0}" th:href="@{/admin/order/confirm/{id}(id=${order.id})}" class="btn btn-primary me-2" th:attr="onclick=|return confirm('#{admin.order.confirmconfirm}')|" th:text="#{admin.order.confirm}">Confirm</a>
+            <a th:if="${order.status == 0}" th:href="@{/admin/order/cancel/{id}(id=${order.id})}" class="btn btn-warning me-2" th:attr="onclick=|return confirm('#{common.confirm.cancel}')|" th:text="#{myorders.cancel}">Cancel</a>
+            <a th:if="${order.status == 1 or order.status == 4}" th:href="@{/admin/order/complete/{id}(id=${order.id})}" class="btn btn-success me-2" th:attr="onclick=|return confirm('#{admin.order.completeconfirm}')|" th:text="#{myorders.complete}">Complete</a>
         </div>
     </div>
 </div>

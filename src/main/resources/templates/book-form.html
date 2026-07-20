@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
-<head th:replace="~{fragments/layout :: head(${book != null ? #messages.msg('book.edit.title') : #messages.msg('book.publish.title')})}"></head>
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language == 'en' ? 'en' : (#locale.language == 'ko' ? 'ko' : 'zh-CN')}">
+<head th:replace="~{fragments/layout :: head(${book.id} != null ? #{book.edit.title} : #{book.publish.title})}"></head>
 <body>
 <div th:replace="~{fragments/layout :: navbar}"></div>
 
@@ -9,63 +9,55 @@
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-body p-4">
-                    <h4 class="card-title mb-4" th:text="${book != null ? #messages.msg('book.edit.title') : #messages.msg('book.publish.title')}">发布书籍</h4>
+                    <h4 class="card-title mb-4" th:text="${book.id} != null ? #{book.edit.title} : #{book.publish.title}">Publish/Edit Book</h4>
 
-                    <form th:action="${book != null ? '/book/edit/' + book.id : '/book/publish'}"
-                          method="post" enctype="multipart/form-data">
+                    <form th:action="${book.id} != null ? @{/book/edit/{id}(id=${book.id})} : @{/book/publish}" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
-                            <label class="form-label" th:text="#{book.title} + ' *'">书名 *</label>
-                            <input type="text" class="form-control" name="title"
-                                   th:value="${book?.title}" required>
+                            <label class="form-label" th:text="#{book.title}">Title</label>
+                            <input type="text" class="form-control" name="title" th:value="${book.title}" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{book.author}">Author</label>
+                                <input type="text" class="form-control" name="author" th:value="${book.author}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{book.isbn}">ISBN</label>
+                                <input type="text" class="form-control" name="isbn" th:value="${book.isbn}">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{book.price}">Price</label>
+                                <input type="number" class="form-control" name="price" step="0.01" th:value="${book.price}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{book.category}">Category</label>
+                                <select class="form-select" name="categoryId" required>
+                                    <option value="" th:text="#{book.selectcategory}">Select Category</option>
+                                    <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${#messages.msg('category.' + cat.id)}" th:selected="${book.categoryId == cat.id}"></option>
+                                </select>
+                            </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" th:text="#{book.author}">作者</label>
-                            <input type="text" class="form-control" name="author"
-                                   th:value="${book?.author}">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" th:text="#{book.isbn}">ISBN</label>
-                            <input type="text" class="form-control" name="isbn"
-                                   th:value="${book?.isbn}">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" th:text="#{book.price} + ' *'">售价 *</label>
-                            <input type="number" class="form-control" name="price" step="0.01" min="0"
-                                   th:value="${book?.price}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" th:text="#{book.category} + ' *'">分类 *</label>
-                            <select class="form-select" name="categoryId" required>
-                                <option value="" th:text="#{book.selectcategory}">请选择分类</option>
-                                <option th:each="cat : ${categories}"
-                                        th:value="${cat.id}"
-                                        th:text="${#messages.msg('category.' + cat.id)}"
-                                        th:selected="${book != null and book.categoryId == cat.id}">
-                                </option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" th:text="#{book.condition}">书籍状态</label>
+                            <label class="form-label" th:text="#{book.condition}">Condition</label>
                             <select class="form-select" name="condition">
-                                <option value="0" th:selected="${book == null or book.condition == 0}" th:text="#{book.condition.new}">全新</option>
-                                <option value="1" th:selected="${book != null and book.condition == 1}" th:text="#{book.condition.good}">良好</option>
-                                <option value="2" th:selected="${book != null and book.condition == 2}" th:text="#{book.condition.fair}">一般</option>
+                                <option value="0" th:selected="${book.condition == 0}" th:text="#{book.condition.new}">New</option>
+                                <option value="1" th:selected="${book.condition == 1}" th:text="#{book.condition.good}">Good</option>
+                                <option value="2" th:selected="${book.condition == 2}" th:text="#{book.condition.fair}">Fair</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" th:text="#{book.description}">描述</label>
-                            <textarea class="form-control" name="description" rows="4"
-                                      th:text="${book?.description}"></textarea>
+                            <label class="form-label" th:text="#{book.description}">Description</label>
+                            <textarea class="form-control" name="description" rows="4" th:text="${book.description}"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" th:text="#{book.image}">封面图片</label>
+                            <label class="form-label" th:text="#{book.image}">Cover Image</label>
                             <input type="file" class="form-control" name="coverImage" accept="image/*">
-                            <img th:if="${book?.coverImage}" th:src="${book.coverImage}"
-                                 class="mt-2 preview-image" alt="当前封面">
                         </div>
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary" th:text="${book != null ? #messages.msg('book.update') : #messages.msg('book.submit')}">保存</button>
-                            <a th:href="@{/book/my}" class="btn btn-secondary" th:text="#{book.cancel}">取消</a>
+                        <div class="d-flex justify-content-between">
+                            <a th:href="@{/book/my}" class="btn btn-secondary" th:text="#{book.cancel}">Cancel</a>
+                            <button type="submit" class="btn btn-primary" th:text="${book.id} != null ? #{book.update} : #{book.submit}">Submit</button>
                         </div>
                     </form>
                 </div>

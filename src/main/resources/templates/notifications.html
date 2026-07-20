@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language == 'en' ? 'en' : (#locale.language == 'ko' ? 'ko' : 'zh-CN')}">
 <head th:replace="~{fragments/layout :: head(#{notification.title})}"></head>
 <body>
 <div th:replace="~{fragments/layout :: navbar}"></div>
@@ -7,39 +7,28 @@
 <div class="container">
     <div th:replace="~{fragments/layout :: alert}"></div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 th:text="#{notification.title}">消息通知</h4>
-        <a th:if="${notifications != null and !notifications.isEmpty()}"
-           th:href="@{/notifications/read-all}" class="btn btn-sm btn-outline-secondary"
-           th:text="#{notification.markAllRead}">全部标为已读</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 th:text="#{notification.title}">Notifications</h4>
+        <a th:href="@{/notifications/read-all}" class="btn btn-sm btn-outline-primary" th:text="#{notification.markAllRead}">Mark All Read</a>
     </div>
 
     <div th:if="${notifications != null and !notifications.isEmpty()}">
         <div class="list-group">
-            <div th:each="notif : ${notifications}"
-                 th:classappend="${notif.isRead == 0} ? 'list-group-item list-group-item-light' : 'list-group-item'"
-                 class="list-group-item d-flex justify-content-between align-items-start">
-                <div class="flex-grow-1">
-                    <div class="d-flex align-items-center">
-                        <span th:if="${notif.isRead == 0}" class="badge bg-danger me-2" style="width:8px;height:8px;border-radius:50%;padding:0;"></span>
-                        <strong th:text="${notif.title}">标题</strong>
-                        <span class="badge ms-2" 
-                              th:classappend="${notif.type == 'order'} ? 'bg-info' : (${notif.type == 'comment'} ? 'bg-success' : 'bg-secondary')"
-                              th:text="${notif.type == 'order' ? '订单' : (notif.type == 'comment' ? '留言' : '系统')}">类型</span>
+            <div th:each="notif : ${notifications}" class="list-group-item" th:classappend="${notif.isRead == 0} ? 'list-group-item-primary'">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong th:text="${notif.title}">Title</strong>
+                        <span class="badge ms-2" th:classappend="'bg-' + (${notif.type == 'order'} ? 'warning' : (${notif.type == 'comment'} ? 'info' : 'secondary'))" th:text="#{'notification.type.' + ${notif.type}}">Type</span>
                     </div>
-                    <p class="mt-2 mb-1" th:text="${notif.content}">内容</p>
-                    <small class="text-muted" th:text="${#temporals.format(notif.createTime, 'yyyy-MM-dd HH:mm')}">时间</small>
+                    <small class="text-muted" th:text="${#temporals.format(notif.createTime, 'yyyy-MM-dd HH:mm')}">Time</small>
                 </div>
-                <a th:if="${notif.isRead == 0}"
-                   th:href="@{/notifications/read/{id}(id=${notif.id})}"
-                   class="btn btn-sm btn-outline-primary ms-2"
-                   th:text="#{notification.markRead}">标为已读</a>
+                <p class="mt-1 mb-0" th:if="${notif.content}" th:text="${notif.content}">Content</p>
+                <a th:if="${notif.isRead == 0}" th:href="@{/notifications/read/{id}(id=${notif.id})}" class="btn btn-sm btn-link" th:text="#{notification.markRead}">Mark Read</a>
             </div>
         </div>
     </div>
-
     <div th:if="${notifications == null or notifications.isEmpty()}" class="text-center text-muted py-5">
-        <p th:text="#{notification.empty}">暂无通知</p>
+        <p th:text="#{notification.empty}">No notifications</p>
     </div>
 </div>
 

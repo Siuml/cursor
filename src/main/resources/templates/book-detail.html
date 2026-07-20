@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language == 'en' ? 'en' : (#locale.language == 'ko' ? 'ko' : 'zh-CN')}">
 <head th:replace="~{fragments/layout :: head(#{book.detail.title})}"></head>
 <body>
 <div th:replace="~{fragments/layout :: navbar}"></div>
@@ -10,41 +10,39 @@
 
     <div class="row">
         <div class="col-md-4">
-            <img th:if="${book.coverImage}" th:src="${book.coverImage}" class="img-fluid rounded book-detail-cover" alt="封面">
+            <img th:if="${book.coverImage}" th:src="${book.coverImage}" class="img-fluid rounded book-detail-cover" th:alt="#{common.image.alt}">
             <div th:unless="${book.coverImage}" class="book-cover-placeholder detail d-flex align-items-center justify-content-center rounded">
-                <span class="text-muted" th:text="${book.title}">书名</span>
+                <span class="text-muted" th:text="${book.title}">Title</span>
             </div>
         </div>
         <div class="col-md-8">
-            <h2 th:text="${book.title}">书名</h2>
-            <p class="text-muted" th:text="#{book.author} + '：' + (${book.author} ?: #{book.detail.unknown})">作者：未知</p>
-            <p th:if="${book.isbn}" th:text="#{book.isbn} + '：' + ${book.isbn}">ISBN：</p>
-            <p th:if="${category}" th:text="#{book.category} + '：' + ${#messages.msg('category.' + category.id)}">分类：</p>
-            <p><span th:text="#{book.seller}">卖家</span>：<a th:href="@{/seller/{id}(id=${seller.id})}" th:text="${seller.nickname}">卖家昵称</a></p>
-            <h3 class="price mb-3">¥<span th:text="${book.price}"></span></h3>
-            <span th:if="${book.condition == 0}" class="badge bg-success me-2" th:text="#{book.condition.new}">全新</span>
-            <span th:if="${book.condition == 1}" class="badge bg-info me-2" th:text="#{book.condition.good}">良好</span>
-            <span th:if="${book.condition == 2}" class="badge bg-warning me-2" th:text="#{book.condition.fair}">一般</span>
-            <p th:text="${book.description}">描述</p>
+            <h2 th:text="${book.title}">Title</h2>
+            <p class="text-muted"><span th:text="#{book.author}">Author</span><span th:text="#{common.colon}">: </span><span th:text="${book.author} ?: #{book.detail.unknown}">Unknown</span></p>
+            <p th:if="${book.isbn}"><span th:text="#{book.isbn}">ISBN</span><span th:text="#{common.colon}">: </span><span th:text="${book.isbn}">ISBN</span></p>
+            <p th:if="${category}"><span th:text="#{book.category}">Category</span><span th:text="#{common.colon}">: </span><span th:text="${#messages.msg('category.' + category.id)}">Category</span></p>
+            <p><span th:text="#{book.seller}">Seller</span><span th:text="#{common.colon}">: </span><a th:href="@{/seller/{id}(id=${seller.id})}" th:text="${seller.nickname}">Seller</a></p>
+            <h3 class="price mb-3"><span th:text="#{common.currency}">$</span><span th:text="${book.price}"></span></h3>
+            <span th:if="${book.condition == 0}" class="badge bg-success me-2" th:text="#{book.condition.new}">New</span>
+            <span th:if="${book.condition == 1}" class="badge bg-info me-2" th:text="#{book.condition.good}">Good</span>
+            <span th:if="${book.condition == 2}" class="badge bg-warning me-2" th:text="#{book.condition.fair}">Fair</span>
+            <p th:text="${book.description}">Description</p>
 
             <div th:if="${book.status == 1}">
                 <form th:if="${loginUser != null and loginUser.id != book.sellerId}"
                       th:action="@{/order/create/{id}(id=${book.id})}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-primary" th:text="#{book.buy}">立即购买</button>
+                    <button type="submit" class="btn btn-primary" th:text="#{book.buy}">Buy Now</button>
                 </form>
                 <span th:if="${loginUser == null}" class="text-muted">
-                    <a th:href="@{/login}" th:text="#{navbar.login}">登录</a> <span th:text="#{book.detail.buynow}">后可购买</span>
+                    <a th:href="@{/login}" th:text="#{navbar.login}">Login</a> <span th:text="#{book.detail.buynow}">to purchase</span>
                 </span>
-                <span th:if="${loginUser != null and loginUser.id == book.sellerId}" class="text-muted" th:text="#{book.detail.myself}">
-                    这是你发布的书籍
-                </span>
+                <span th:if="${loginUser != null and loginUser.id == book.sellerId}" class="text-muted" th:text="#{book.detail.myself}">This is your listing</span>
             </div>
             <div th:if="${book.status != 1}">
-                <span th:if="${book.status == 2}" class="badge bg-secondary" th:text="#{book.detail.sold}">已售出</span>
-                <span th:if="${book.status != 2}" class="badge bg-secondary" th:text="#{book.detail.off}">已下架</span>
+                <span th:if="${book.status == 2}" class="badge bg-secondary" th:text="#{book.detail.sold}">Sold</span>
+                <span th:if="${book.status != 2}" class="badge bg-secondary" th:text="#{book.detail.off}">Off Shelf</span>
             </div>
 
-            <a th:href="@{/}" class="btn btn-link mt-3" th:text="#{book.detail.backhome}">返回首页</a>
+            <a th:href="@{/}" class="btn btn-link mt-3" th:text="#{book.detail.backhome}">Back to Home</a>
         </div>
     </div>
 
@@ -52,9 +50,9 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex align-items-center">
-                    <h5 class="mb-0" th:text="#{comment.title}">留言板</h5>
+                    <h5 class="mb-0" th:text="#{comment.title}">Comments</h5>
                     <span class="badge bg-light text-primary ms-2" th:text="${comments != null ? comments.size() : 0}">0</span>
-                    <span class="ms-1" th:text="#{comment.count}">条留言</span>
+                    <span class="ms-1" th:text="#{comment.count}"> comments</span>
                 </div>
                 <div class="card-body">
                     <div th:if="${loginUser != null}" class="mb-4">
@@ -62,31 +60,31 @@
                             <div class="mb-3">
                                 <textarea name="content" class="form-control" rows="3" th:placeholder="#{comment.placeholder}" required></textarea>
                             </div>
-                            <button type="submit" class="btn btn-primary" th:text="#{comment.submit}">发布留言</button>
+                            <button type="submit" class="btn btn-primary" th:text="#{comment.submit}">Post</button>
                         </form>
                     </div>
                     <div th:if="${loginUser == null}" class="mb-4 alert alert-info">
-                        <a th:href="@{/login}" th:text="#{navbar.login}">登录</a> <span th:text="#{comment.login}">后可发表留言</span>
+                        <a th:href="@{/login}" th:text="#{navbar.login}">Login</a> <span th:text="#{comment.login}">to comment</span>
                     </div>
 
-                    <div th:if="${comments != null && !comments.isEmpty()}" class="list-group">
+                    <div th:if="${comments != null and !comments.isEmpty()}" class="list-group">
                         <div th:each="comment : ${comments}" class="list-group-item comment-item">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="flex-grow-1">
-                                    <strong th:text="${comment.userNickname}">用户名</strong>
-                                    <span class="text-muted ms-2" th:text="${#temporals.format(comment.createTime, 'yyyy-MM-dd HH:mm')}">时间</span>
+                                    <strong th:text="${comment.userNickname}">User</strong>
+                                    <span class="text-muted ms-2" th:text="${#temporals.format(comment.createTime, 'yyyy-MM-dd HH:mm')}">Time</span>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-outline-secondary reply-btn" th:attr="data-comment-id=${comment.id}" th:text="#{comment.reply}">回复</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary reply-btn" th:attr="data-comment-id=${comment.id}" th:text="#{comment.reply}">Reply</button>
                             </div>
-                            <p class="mt-2" th:text="${comment.content}">留言内容</p>
+                            <p class="mt-2" th:text="${comment.content}">Comment content</p>
 
-                            <div th:if="${comment.replies != null && !comment.replies.isEmpty()}" class="ms-4 mt-3">
+                            <div th:if="${comment.replies != null and !comment.replies.isEmpty()}" class="ms-4 mt-3">
                                 <div th:each="reply : ${comment.replies}" class="bg-light rounded p-2 mb-2 border-start border-primary border-3">
                                     <div class="d-flex justify-content-between">
-                                        <strong class="text-primary" th:text="${reply.userNickname}">回复者</strong>
-                                        <small class="text-muted" th:text="${#temporals.format(reply.createTime, 'yyyy-MM-dd HH:mm')}">时间</small>
+                                        <strong class="text-primary" th:text="${reply.userNickname}">Replyer</strong>
+                                        <small class="text-muted" th:text="${#temporals.format(reply.createTime, 'yyyy-MM-dd HH:mm')}">Time</small>
                                     </div>
-                                    <p class="mt-1 mb-0" th:text="${reply.content}">回复内容</p>
+                                    <p class="mt-1 mb-0" th:text="${reply.content}">Reply content</p>
                                 </div>
                             </div>
 
@@ -94,15 +92,15 @@
                                 <form th:action="@{/book/reply/{parentId}(parentId=${comment.id})}" method="post">
                                     <textarea name="content" class="form-control form-control-sm" rows="2" th:placeholder="#{comment.reply.placeholder}" required></textarea>
                                     <div class="d-flex justify-content-end mt-2">
-                                        <button type="button" class="btn btn-sm btn-secondary me-2 cancel-reply-btn" th:attr="data-comment-id=${comment.id}" th:text="#{book.cancel}">取消</button>
-                                        <button type="submit" class="btn btn-sm btn-primary" th:text="#{comment.reply.submit}">发送回复</button>
+                                        <button type="button" class="btn btn-sm btn-secondary me-2 cancel-reply-btn" th:attr="data-comment-id=${comment.id}" th:text="#{book.cancel}">Cancel</button>
+                                        <button type="submit" class="btn btn-sm btn-primary" th:text="#{comment.reply.submit}">Send Reply</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
                     <div th:if="${comments == null || comments.isEmpty()}" class="text-center text-muted py-4">
-                        <p th:text="#{comment.empty}">暂无留言，快来发表第一条吧！</p>
+                        <p th:text="#{comment.empty}">No comments yet.</p>
                     </div>
                 </div>
             </div>
