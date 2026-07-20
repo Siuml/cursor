@@ -17,7 +17,8 @@ public class CategoryService {
     }
 
     public List<Category> listAll() {
-        return categoryMapper.selectList(null);
+        return categoryMapper.selectList(
+                new LambdaQueryWrapper<Category>().in(Category::getId, 1, 2, 3, 4, 5));
     }
 
     public Category getById(Long id) {
