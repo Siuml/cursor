@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language == 'en' ? 'en' : (#locale.language == 'ko' ? 'ko' : 'zh-CN')}">
 <head th:replace="~{fragments/layout :: head(#{login.title})}"></head>
 <body>
@@ -11,8 +11,8 @@
                 <div class="card-body p-4">
                     <h4 class="card-title text-center mb-4" th:text="#{login.title}">Login</h4>
 
-                    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-                    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                    <div th:if="${error}" class="alert alert-danger" th:text="${#messages.msgOrNull(error) ?: error}"></div>
+                    <div th:if="${success}" class="alert alert-success" th:text="${#messages.msgOrNull(success) ?: success}"></div>
 
                     <form th:action="@{/login}" method="post">
                         <div class="mb-3">

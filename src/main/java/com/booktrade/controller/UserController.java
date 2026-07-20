@@ -27,7 +27,7 @@ public class UserController {
                         Model model) {
         User user = userService.login(username, password);
         if (user == null) {
-            model.addAttribute("error", "用户名或密码错误");
+            model.addAttribute("error", "msg.login.error");
             return "login";
         }
         session.setAttribute(LoginInterceptor.SESSION_USER, user);
@@ -42,11 +42,11 @@ public class UserController {
                            @RequestParam(required = false) String phone,
                            Model model) {
         if (password == null || !password.equals(confirmPassword)) {
-            model.addAttribute("error", "两次输入的密码不一致");
+            model.addAttribute("error", "msg.register.password_mismatch");
             return "register";
         }
         if (password.length() < 6) {
-            model.addAttribute("error", "密码长度至少6位");
+            model.addAttribute("error", "msg.register.password_too_short");
             return "register";
         }
 
@@ -57,10 +57,10 @@ public class UserController {
         user.setPhone(phone);
 
         if (!userService.register(user)) {
-            model.addAttribute("error", "用户名已存在");
+            model.addAttribute("error", "msg.register.username_exists");
             return "register";
         }
-        model.addAttribute("success", "注册成功，请登录");
+        model.addAttribute("success", "msg.register.success");
         return "login";
     }
 

@@ -90,14 +90,14 @@ public class OrderService {
         order.setStatus(0);
         boolean result = orderMapper.insert(order) > 0;
         if (result) {
-            addLog(order.getId(), null, null, "订单创建");
+            addLog(order.getId(), null, null, "Order created");
             Book book = bookMapper.selectById(order.getBookId());
             if (book != null) {
                 Notification notif = new Notification();
                 notif.setUserId(order.getSellerId());
                 notif.setType("order");
-                notif.setTitle("书籍被下单");
-                notif.setContent("您的书籍《" + book.getTitle() + "》已被下单，订单编号：" + order.getOrderNo() + "，请及时确认。");
+                notif.setTitle("msg.notification.new_order");
+                notif.setContent("Your book \"" + book.getTitle() + "\" has been ordered, order No: " + order.getOrderNo() + ". Please confirm.");
                 notif.setRelatedId(order.getId());
                 notif.setIsRead(0);
                 notif.setCreateTime(LocalDateTime.now());
@@ -115,10 +115,10 @@ public class OrderService {
         if (result && operatorId != null) {
             String action = "";
             switch (status) {
-                case 0: action = "订单重置为待确认"; break;
-                case 1: action = "管理员确认订单"; break;
-                case 2: action = "订单完成"; break;
-                case 3: action = "订单取消"; break;
+                case 0: action = "Order reset to pending"; break;
+                case 1: action = "Admin confirmed order"; break;
+                case 2: action = "Order completed"; break;
+                case 3: action = "Order cancelled"; break;
             }
             addLog(id, operatorId, operatorName, action);
         }

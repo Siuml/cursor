@@ -70,7 +70,7 @@ public class BookController {
                              RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute(LoginInterceptor.SESSION_USER);
         if (user == null) {
-            redirectAttributes.addFlashAttribute("error", "请先登录");
+            redirectAttributes.addFlashAttribute("error", "msg.need_login");
             return "redirect:/login";
         }
 
@@ -81,9 +81,9 @@ public class BookController {
 
         boolean success = commentService.create(comment);
         if (success) {
-            redirectAttributes.addFlashAttribute("success", "留言成功");
+            redirectAttributes.addFlashAttribute("success", "msg.comment.added");
         } else {
-            redirectAttributes.addFlashAttribute("error", "留言失败");
+            redirectAttributes.addFlashAttribute("error", "msg.comment.add_failed");
         }
         return "redirect:/book/detail/" + bookId;
     }
@@ -95,18 +95,18 @@ public class BookController {
                            RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute(LoginInterceptor.SESSION_USER);
         if (user == null) {
-            redirectAttributes.addFlashAttribute("error", "请先登录");
+            redirectAttributes.addFlashAttribute("error", "msg.need_login");
             return "redirect:/login";
         }
 
         Comment parentComment = commentService.getById(parentId);
         if (parentComment == null) {
-            redirectAttributes.addFlashAttribute("error", "留言不存在");
+            redirectAttributes.addFlashAttribute("error", "msg.comment.not_found");
             return "redirect:/";
         }
 
         if (content == null || content.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "回复内容不能为空");
+            redirectAttributes.addFlashAttribute("error", "msg.reply.empty_content");
             return "redirect:/book/detail/" + parentComment.getBookId();
         }
 
@@ -118,9 +118,9 @@ public class BookController {
 
         boolean success = commentService.create(reply);
         if (success) {
-            redirectAttributes.addFlashAttribute("success", "回复成功");
+            redirectAttributes.addFlashAttribute("success", "msg.reply.added");
         } else {
-            redirectAttributes.addFlashAttribute("error", "回复失败");
+            redirectAttributes.addFlashAttribute("error", "msg.reply.add_failed");
         }
         return "redirect:/book/detail/" + parentComment.getBookId();
     }
@@ -159,7 +159,7 @@ public class BookController {
         }
 
         bookService.save(book);
-        redirectAttributes.addFlashAttribute("success", "发布成功");
+        redirectAttributes.addFlashAttribute("success", "msg.book.published");
         return "redirect:/book/my";
     }
 
@@ -206,7 +206,7 @@ public class BookController {
         }
 
         bookService.update(existing);
-        redirectAttributes.addFlashAttribute("success", "修改成功");
+        redirectAttributes.addFlashAttribute("success", "msg.book.updated");
         return "redirect:/book/my";
     }
 
@@ -227,7 +227,7 @@ public class BookController {
         Book book = bookService.getById(id);
         if (book != null && book.getSellerId().equals(user.getId())) {
             bookService.offShelf(id);
-            redirectAttributes.addFlashAttribute("success", "已下架");
+            redirectAttributes.addFlashAttribute("success", "msg.book.off_shelf");
         }
         return "redirect:/book/my";
     }

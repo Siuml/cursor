@@ -40,11 +40,11 @@ public class OrderController {
         Book book = bookService.getById(bookId);
 
         if (book == null || book.getStatus() != 1) {
-            redirectAttributes.addFlashAttribute("error", "书籍不可购买");
+            redirectAttributes.addFlashAttribute("error", "msg.book.cannot_buy");
             return "redirect:/";
         }
         if (book.getSellerId().equals(user.getId())) {
-            redirectAttributes.addFlashAttribute("error", "不能购买自己发布的书籍");
+            redirectAttributes.addFlashAttribute("error", "msg.book.cannot_buy_own");
             return "redirect:/book/detail/" + bookId;
         }
 
@@ -55,7 +55,7 @@ public class OrderController {
         order.setPrice(book.getPrice());
 
         orderService.create(order);
-        redirectAttributes.addFlashAttribute("success", "下单成功，等待卖家确认");
+        redirectAttributes.addFlashAttribute("success", "msg.order.created");
         return "redirect:/order/my";
     }
 
@@ -79,7 +79,7 @@ public class OrderController {
         TradeOrder order = orderService.getById(id);
         if (order != null && order.getSellerId().equals(user.getId()) && order.getStatus() == 0) {
             orderService.updateStatus(id, 1);
-            redirectAttributes.addFlashAttribute("success", "已确认订单");
+            redirectAttributes.addFlashAttribute("success", "msg.order.confirmed");
         }
         return "redirect:/order/my";
     }
@@ -102,7 +102,7 @@ public class OrderController {
             model.addAttribute("loginUser", user);
             return "trade-detail";
         }
-        model.addAttribute("error", "订单不存在");
+        model.addAttribute("error", "msg.order.not_found");
         return "trade-detail";
     }
 
@@ -124,7 +124,7 @@ public class OrderController {
             model.addAttribute("loginUser", user);
             return "payment";
         }
-        model.addAttribute("error", "订单不存在或无法付款");
+        model.addAttribute("error", "msg.order.cannot_pay");
         return "payment";
     }
 
@@ -138,9 +138,9 @@ public class OrderController {
         if (order != null && order.getBuyerId().equals(user.getId()) && order.getStatus() == 1) {
             boolean success = paymentService.pay(id, order.getPrice(), payMethod);
             if (success) {
-                redirectAttributes.addFlashAttribute("success", "付款成功");
+                redirectAttributes.addFlashAttribute("success", "msg.payment.success");
             } else {
-                redirectAttributes.addFlashAttribute("error", "付款失败");
+                redirectAttributes.addFlashAttribute("error", "msg.payment.failed");
             }
         }
         return "redirect:/order/detail/" + id;
@@ -156,7 +156,7 @@ public class OrderController {
                 && (order.getBuyerId().equals(user.getId()) || order.getSellerId().equals(user.getId()))) {
             orderService.updateStatus(id, 2);
             bookService.markSold(order.getBookId());
-            redirectAttributes.addFlashAttribute("success", "交易已完成");
+            redirectAttributes.addFlashAttribute("success", "msg.trade.completed");
         }
         return "redirect:/order/my";
     }
@@ -170,7 +170,7 @@ public class OrderController {
         if (order != null && order.getStatus() == 0
                 && (order.getBuyerId().equals(user.getId()) || order.getSellerId().equals(user.getId()))) {
             orderService.updateStatus(id, 3);
-            redirectAttributes.addFlashAttribute("success", "订单已取消");
+            redirectAttributes.addFlashAttribute("success", "msg.order.cancelled");
         }
         return "redirect:/order/my";
     }
